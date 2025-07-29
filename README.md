@@ -1,5 +1,6 @@
 # trader-analysis
 This project analyzes the relationship between trader behavior on the Hyperliquid platform and the overall market sentiment, as indicated by the Fear & Greed Index. The goal is to identify trends or signals in trading activity (like profitability, volume, and leverage) that correlate with market fear or greed.
+The title serves as the first point of contact for anyone viewing the project. It clearly and concisely states the project's core subject. Following the title, the introduction provides a brief but comprehensive overview of the project's objective. It explains that the analysis focuses on the connection between trader actions on Hyperliquid and the broader market sentiment, specifically the Fear & Greed Index
 
 
 OUTPUT GIVEN
