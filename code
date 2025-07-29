@@ -1,1 +1,127 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import os
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 
+
+os.makedirs("csv_files", exist_ok=True)
+os.makedirs("outputs", exist_ok=True)
+
+
+sns.set(style='whitegrid', palette='Set2')
+sentiment_url = 'https://drive.google.com/uc?id=1PgQC0tO8XN-wqkNyghWc_-mnrYv_nhSf&export=download'
+trader_url    = 'https://drive.google.com/uc?id=1IAfLZwu6rJzyWKgBToqwSmmVYU6VbjVs&export=download'
+
+
+df_sent = pd.read_csv(sentiment_url)
+df_tr = pd.read_csv(trader_url)
+df_sent.columns = df_sent.columns.str.strip().str.lower()
+df_tr.columns = df_tr.columns.str.strip().str.lower()
+
+df_tr.rename(columns={
+    'timestamp': 'time',
+    'closed pnl': 'closedpnl',
+    'size usd': 'size'
+}, inplace=True)df_tr['time'] = pd.to_datetime(df_tr['time'], errors='coerce')
+df_sent['date'] = pd.to_datetime(df_sent['date'], errors='coerce')
+
+df_tr['date'] = df_tr['time'].dt.normalize()
+
+
+df = pd.merge(df_tr, df_sent[['date', 'classification']], on='date', how='left')
+
+print("[INFO] Merged data shape:", df.shape)
+print("[INFO] Missing sentiment classifications:", df['classification'].isnull().sum())
+df = df[df['closedpnl'].between(df['closedpnl'].quantile(0.01), df['closedpnl'].quantile(0.99))]
+
+df['pnl_per_unit'] = df['closedpnl'] / df['size'].replace(0, np.nan)
+df['hour'] = df['time'].dt.hour
+df['weekday'] = df['time'].dt.day_name()has_leverage = 'leverage' in df.columns
+
+if has_leverage:
+    df['leverage_bucket'] = pd.cut(
+        df['leverage'],
+        bins=[0, 2, 5, 10, 25, 100],
+        labels=['0-2x', '2-5x', '5-10x', '10-25x', '25-100x']
+    )agg_dict = {
+    'total_trades': ('closedpnl', 'size'),
+    'avg_pnl': ('closedpnl', 'mean'),
+    'win_rate': ('closedpnl', lambda x: np.mean(x > 0)),
+    'avg_pnl_per_unit': ('pnl_per_unit', 'mean')
+}
+
+if has_leverage:
+    agg_dict['avg_leverage'] = ('leverage', 'mean')
+
+summary = df.groupby('classification').agg(**agg_dict).reset_index()
+summary.to_csv('csv_files/summary_by_sentiment.csv', index=False)
+def save_plot(fig, filename):
+    fig.savefig(f'outputs/{filename}', bbox_inches='tight')
+    plt.close(fig)
+
+
+fig = plt.figure(figsize=(10, 6))
+sns.violinplot(x='classification', y='closedpnl', data=df)
+plt.title("PnL Distribution by Sentiment")
+save_plot(fig, 'pnl_violin.png')
+
+
+fig = plt.figure(figsize=(6, 4))
+sns.barplot(x='classification', y='win_rate', data=summary)
+plt.title("Win Rate by Sentiment")
+plt.ylim(0, 1)
+save_plot(fig, 'win_rate.png')
+
+
+if has_leverage:
+    fig = plt.figure(figsize=(6, 4))
+    sns.barplot(x='classification', y='avg_leverage', data=summary)
+    plt.title("Average Leverage by Sentiment")
+    save_plot(fig, 'avg_leverage.png')
+fig = plt.figure(figsize=(10, 5))
+hourly = df.groupby(['hour', 'classification'])['closedpnl'].mean().reset_index()
+sns.lineplot(x='hour', y='closedpnl', hue='classification', data=hourly)
+plt.title("Avg PnL by Hour")
+save_plot(fig, 'hourly_pnl.png')
+
+
+if has_leverage:
+    fig = plt.figure(figsize=(8, 5))
+    sns.barplot(x='leverage_bucket', y='closedpnl', hue='classification', data=df)
+    plt.title("PnL by Leverage Bucket")
+    save_plot(fig, 'leverage_bucket.png')
+
+symbol_summary = df.groupby(['coin', 'classification']).agg(
+    avg_pnl=('closedpnl', 'mean'),
+    trades=('closedpnl', 'size')
+).reset_index()
+symbol_summary.to_csv("csv_files/symbol_sentiment.csv", index=False)
+
+
+account_summary = df.groupby(['account', 'classification']).agg(
+    avg_pnl=('closedpnl', 'mean'),
+    trades=('closedpnl', 'size'),
+    win_rate=('closedpnl', lambda x: np.mean(x > 0))
+).reset_index()
+account_summary.to_csv("csv_files/account_sentiment.csv", index=False)features = ['closedpnl', 'size']
+if has_leverage:
+    features.append('leverage')
+
+model_df = df.dropna(subset=features + ['classification'])
+print("[INFO] Model dataset size:", model_df.shape)
+
+if len(model_df) < 10:
+    print(" Not enough clean data to train model. Skipping ML.")
+else:
+    X = model_df[features]
+    y = model_df['classification'].map({'Fear': 0, 'Greed': 1})
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    clf = RandomForestClassifier(random_state=42).fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print("[INFO] Classification Report:\n", classification_report(y_test, y_pred))
