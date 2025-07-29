@@ -3,5 +3,8 @@ This project analyzes the relationship between trader behavior on the Hyperliqui
 
 
 OUTPUT GIVEN
-![WhatsApp Image 2025-07-30 at 00 19 48_746ff701](https://github.com/user-attachments/assets/7ff18b35-8937-439a-8dd5-fb5b6ba1bf90)
+![WhatsApp Image 2025-07-30 at 00 19 48_746ff701](https://github.com/user-attachments/assets/d2cd9a91-dcae-4b53-b6c3-6b1f89e3b84f)
+![WhatsApp Image 2025-07-30 at 00 21 19_f771a704](https://github.com/user-attachments/assets/8ac6f699-0e7a-4e0e-bdab-5564d0f387fa)
+![WhatsApp Image 2025-07-30 at 00 21 54_ed0ede2b](https://github.com/user-attachments/assets/53b12792-b982-42d2-825f-2d6a47c4bfb8)
+
 
