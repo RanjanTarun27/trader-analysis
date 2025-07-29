@@ -1,1 +1,22 @@
+1. Executive Summary
+This report explores the relationship between crypto-trader behavior on the Hyperliquid platform and the broader market sentiment, as measured by the Fear & Greed Index. The objective was to determine if trading metrics such as profitability, leverage, and volume change in response to periods of "Fear" versus "Greed". The analysis revealed distinct patterns: traders tend to use 
+higher leverage during periods of "Greed," and overall trading volume increases during times of "Fear." Profitability, however, showed no statistically significant difference between the two sentiment states, suggesting that market sentiment alone is not a reliable predictor of short-term trading success.
 
+2. Methodology
+The analysis was conducted using two primary datasets: historical trader data from Hyperliquid and the daily Bitcoin Fear & Greed Index.
+Data Preparation: The two datasets were loaded, cleaned, and merged based on their date fields. The trader data's timestamp was converted to a standard date format to align with the sentiment index.
+Analysis: The merged data was segmented by market sentiment ("Fear" or "Greed"). Key trading metrics—including 
+closedPnL, leverage, and trade size—were then analyzed across these two segments.
+Visualization: Box plots and bar charts were generated to visually compare the distributions of these metrics during different sentiment periods. All analysis was performed in a Google Colab notebook, and all files were organized according to the specified submission format.
+
+3. Key Findings
+The analysis uncovered several key trends in trader behavior:
+Leverage Usage: Traders demonstrated a clear tendency to use higher leverage during "Greed" periods. This suggests that a positive market outlook encourages traders to take on greater risk, potentially in pursuit of higher returns.
+Trading Volume: Contrary to what might be expected, total trading volume (sum of size) was significantly higher on "Fear" days. This indicates that market downturns and uncertainty trigger more trading activity, likely due to panic-selling, dip-buying, or hedging strategies.
+
+Profitability (closedPnL): The median profitability of traders remained largely consistent across both "Fear" and "Greed" states. While there were outliers with high profits and losses in both periods, the overall distribution showed no significant skew, suggesting that sentiment does not uniformly dictate profitable outcomes.
+
+4. Conclusion and Strategic Implications
+The findings suggest that while market sentiment clearly influences trading decisions (like leverage and volume), it does not directly correlate with overall profitability. The increased volume during "Fear" periods presents an opportunity for exchanges and market makers, while the higher leverage during "Greed" highlights a period of increased systemic risk.
+
+For traders, this analysis serves as a caution against relying too heavily on market sentiment as a trading signal. While sentiment can indicate a market's direction, it is not a substitute for a well-defined trading strategy. This insight could be used to develop smarter, counter-cyclical trading strategies that capitalize on the predictable behaviors of others during extreme market sentiment.
